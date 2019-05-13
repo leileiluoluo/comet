@@ -3,7 +3,7 @@
 You can use Comet for realtime peer-to-peer message push or broadcasting.
 
 The Comet API provide two different protocols for receiver and sender.
-Message receiver using websocket protocal, as well as Messsage sender using HTTP protocal. 
+Message receiver using websocket protocol, as well as Messsage sender using HTTP protocol. 
 <div align=center><img width="664" height="261" src="https://github.com/olzhy/comet/blob/master/comet-api.png"/></div><br/>
 The design is very simple and light-weighted.
 When a web browser client connected, the Comet server launch a goroutine simultaneously and monitor it.
