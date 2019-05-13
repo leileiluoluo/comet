@@ -2,14 +2,14 @@
 
 You can use Comet for realtime peer-to-peer message push or broadcasting.
 
-The Comet API support two 
-Message receiver should use ws protocal, as well as Messsage sender should use HTTP protocal. 
+The Comet API provide two different protocols for receiver and sender.
+Message receiver using websocket protocal, as well as Messsage sender using HTTP protocal. 
 <div align=center><img width="664" height="261" src="https://github.com/olzhy/comet/blob/master/comet-api.png"/></div><br/>
 The design is very simple and light-weighted.
 When a web browser client connected, the Comet server launch a goroutine simultaneously and monitor it.
 Monitor corresponding to the client send a heartbeat message per 5 second in order to check the connection. Once the connection break, the Comet will remove this client.
 So, in this way, the frontend will never pay attention to the Comet server and never should send heartbeat to server.
-Control is in server side.
+Control is in server side completely.
 <div align=center><img width="408" height="220" src="https://github.com/olzhy/comet/blob/master/comet-heartbeat.png"/></div>
 
 ## 1) Run 
@@ -18,7 +18,7 @@ $ go get github.com/olzhy/comet
 $ go run main.go
 ```
 
-## 2) API for Browser
+## 2) API for web Browser
 You can use JavaScript WebSocket API to establish a connection to Comet server.
 The address is:
 ```JavaScript
