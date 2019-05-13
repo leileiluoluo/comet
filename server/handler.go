@@ -1,4 +1,4 @@
-package comet
+package server
 
 import (
 	"net/http"

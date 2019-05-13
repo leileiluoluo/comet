@@ -1,4 +1,4 @@
-package comet
+package server
 
 import (
 	"golang.org/x/net/websocket"
@@ -107,13 +107,12 @@ func (c *Client) heartbeat() error {
 }
 
 func (c *Client) Listen() {
-	for {
+	for range time.Tick(5 * time.Second) {
 		err := c.heartbeat()
 		if nil != err {
 			log.Printf("client heartbeat error, user_id: %v, timestamp: %d, err: %s", c.UserId, c.Timestamp, err)
 			c.wsServer.DelCli <- c
 			return
 		}
-		time.Sleep(time.Second * 5)
 	}
 }

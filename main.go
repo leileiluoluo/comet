@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/olzhy/comet"
+	"github.com/olzhy/comet/server"
 	"net/http"
 	"log"
 	"golang.org/x/net/websocket"
@@ -16,9 +16,9 @@ func main() {
 	flag.Parse()
 
 	// server
-	wsServer := comet.NewWsServer()
-	httpServer := comet.NewHttpServer(wsServer)
-	h := comet.NewHandler(wsServer, httpServer)
+	wsServer := server.NewWsServer()
+	httpServer := server.NewHttpServer(wsServer)
+	h := server.NewHandler(wsServer, httpServer)
 	go wsServer.Start()
 
 	// handler
