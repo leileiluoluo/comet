@@ -35,3 +35,6 @@ such as:
 curl -d '{"user_id": "x", "message": "test"}' http://localhost:8080/messages
 ```
 Then the user x you specified will receive the test message.
+
+For more details, please visit my blog.
+https://leileiluoluo.com/posts/golang-websocket-combine-consistent-hashing.html
