@@ -2,8 +2,15 @@
 
 You can use Comet for realtime peer-to-peer message push or broadcasting.
 
-<div align=center><img width="664" height="261" src="https://leileiluoluo.com/wp-content/uploads/2018/09/comet-api.png"/></div><br/>
-<div align=center><img width="408" height="220" src="https://leileiluoluo.com/wp-content/uploads/2018/09/comet-heartbeat.png"/></div>
+The Comet API support two 
+Message receiver should use ws protocal, as well as Messsage sender should use HTTP protocal. 
+<div align=center><img width="664" height="261" src="https://github.com/olzhy/comet/blob/master/comet-api.png"/></div><br/>
+The design is very simple and light-weighted.
+When a web browser client connected, the Comet server launch a goroutine simultaneously and monitor it.
+Monitor corresponding to the client send a heartbeat message per 5 second in order to check the connection. Once the connection break, the Comet will remove this client.
+So, in this way, the frontend will never pay attention to the Comet server and never should send heartbeat to server.
+Control is in server side.
+<div align=center><img width="408" height="220" src="https://github.com/olzhy/comet/blob/master/comet-heartbeat.png"/></div>
 
 ## 1) Run 
 ```Bash
@@ -17,11 +24,7 @@ The address is:
 ```JavaScript
 ws://localhost:8080/comet?user_id=:user_id
 ```
-See the sample page:
-```JavaScript
-http://localhost:8080
-```
-Then input a user ID such as 1.
+Please give a arbitrary valid :user_id param, such as x.
 
 ## 3) Send message
 You can send a message to the browser user client in step 2.
@@ -31,4 +34,4 @@ such as:
 ```Bash
 curl -d '{"user_id": "x", "message": "test"}' http://localhost:8080/messages
 ```
-Then the browser user client will receive this message.
+Then the user x you specified will receive the test message.
