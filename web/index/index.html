@@ -1,0 +1,28 @@
+<html>
+	<head>
+		<title>WebSocket Chat</title>
+		<script type="text/javascript" src="js/comet.js"></script>
+	</head>
+	<body>
+		<p>WebSocket Chat</p>
+		Please input your alias and clientId</br></br>
+		
+		<div id="msg">
+		</div>
+		<table border="1">
+			<tr>
+				<td>ws address:</td>
+				<td><input id="server" type="text" placeholder="localhost:8080/comet"></td>
+			</tr>
+			<tr>
+				<td>user:</td>
+				<td><input id="user_id" type="text"></td>
+			</tr>
+		</table>
+		</br>
+		<input type="button" onclick="login()" value="login">
+		<input type="button" onclick="logout()" value="logout">
+		<div id="chat">
+		</div>
+	</body>
+</html>

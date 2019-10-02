@@ -1,10 +1,18 @@
 package server
 
 import (
-	"golang.org/x/net/websocket"
-	"time"
-	"log"
 	"encoding/json"
+	"log"
+	"sync"
+	"time"
+
+	"golang.org/x/net/websocket"
+)
+
+const (
+	CliAddChanSize  = 20
+	CliDelChanSize  = 20
+	MessageChanSize = 1000
 )
 
 type HttpServer struct {
@@ -13,6 +21,7 @@ type HttpServer struct {
 
 type WsServer struct {
 	Clients map[string][]*Client
+	mutex   sync.RWMutex
 	AddCli  chan *Client
 	DelCli  chan *Client
 	Message chan *Message
@@ -32,10 +41,10 @@ type Message struct {
 
 func NewWsServer() *WsServer {
 	return &WsServer{
-		make(map[string][]*Client),
-		make(chan *Client),
-		make(chan *Client),
-		make(chan *Message, 1000),
+		Clients: make(map[string][]*Client),
+		AddCli:  make(chan *Client, CliAddChanSize),
+		DelCli:  make(chan *Client, CliDelChanSize),
+		Message: make(chan *Message, MessageChanSize),
 	}
 }
 
@@ -49,26 +58,43 @@ func (httpServer *HttpServer) SendMessage(userId, message string) {
 }
 
 func (wsServer *WsServer) SendMessage(userId, message string) {
+	// LOCK
+	wsServer.mutex.RLock()
+	defer wsServer.mutex.RUnlock()
+
 	clients := wsServer.Clients[userId]
-	if len(clients) > 0 {
-		for _, c := range clients {
-			c.conn.Write([]byte(message))
-		}
-		log.Printf("message success sent to client, user_id: %s", userId)
-	} else {
+	if len(clients) <= 0 {
 		log.Printf("client not found, user_id: %s", userId)
+		return
 	}
+	for _, c := range clients {
+		if nil != c {
+			// async message send
+			go c.sendMessage(userId, message)
+		}
+	}
+	log.Printf("message success sent to client, user_id: %s", userId)
 }
 
 func (wsServer *WsServer) addClient(c *Client) {
+	// LOCK
+	wsServer.mutex.Lock()
+	defer wsServer.mutex.Unlock()
+
 	clients := wsServer.Clients[c.UserId]
 	wsServer.Clients[c.UserId] = append(clients, c)
 	log.Printf("a client added, userId: %s, timestamp: %d", c.UserId, c.Timestamp)
 }
 
 func (wsServer *WsServer) delClient(c *Client) {
+	// LOCK
+	wsServer.mutex.Lock()
+	defer wsServer.mutex.Unlock()
+
 	clients := wsServer.Clients[c.UserId]
-	if len(clients) > 0 {
+	if 0 == len(clients) {
+		delete(wsServer.Clients, c.UserId)
+	} else if len(clients) > 0 {
 		for i, client := range clients {
 			if client.Timestamp == c.Timestamp {
 				wsServer.Clients[c.UserId] = append(clients[:i], clients[i+1:]...)
@@ -76,10 +102,13 @@ func (wsServer *WsServer) delClient(c *Client) {
 			}
 		}
 	}
-	if 0 == len(clients) {
-		delete(wsServer.Clients, c.UserId)
-	}
 	log.Printf("a client deleted, user_id: %s, timestamp: %d", c.UserId, c.Timestamp)
+}
+
+func (c *Client) sendMessage(userId, message string) {
+	if nil != c.conn {
+		c.conn.Write([]byte(message))
+	}
 }
 
 func (wsServer *WsServer) Start() {
@@ -91,13 +120,12 @@ func (wsServer *WsServer) Start() {
 			wsServer.addClient(c)
 		case c := <-wsServer.DelCli:
 			wsServer.delClient(c)
-
 		}
 	}
 }
 
 func (c *Client) heartbeat() error {
-	millis := time.Now().UnixNano() / 1000000
+	millis := time.Now().UnixNano() / 1e6
 	heartbeat := struct {
 		Heartbeat int64 `json:"heartbeat"`
 	}{millis}

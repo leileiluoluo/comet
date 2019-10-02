@@ -1,11 +1,15 @@
 package server
 
 import (
-	"net/http"
 	"encoding/json"
-	"golang.org/x/net/websocket"
+	"net/http"
+	"strings"
 	"time"
+
+	"golang.org/x/net/websocket"
 )
+
+const UserId = "user_id"
 
 type Error struct {
 	Code   string `json:"code"`
@@ -26,20 +30,20 @@ func (h *Handler) MessageHandler(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(m)
 	defer r.Body.Close()
 	if nil != err {
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(&Error{"params_invalid", "params invalid"})
 		return
 	}
 	h.httpServer.SendMessage(m.UserId, m.Message)
-	w.WriteHeader(201)
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(m)
 }
 
 func (h *Handler) CometHandler(conn *websocket.Conn) {
-	userId := conn.Request().URL.Query().Get("user_id")
+	userId := conn.Request().URL.Query().Get(UserId)
 	defer conn.Close()
-	if len(userId) > 0 {
-		millis := time.Now().UnixNano() / 1000000
+	if "" != strings.TrimSpace(userId) {
+		millis := time.Now().UnixNano() / 1e6
 		c := &Client{userId, millis, conn, h.wsServer}
 		h.wsServer.AddCli <- c
 		c.Listen()

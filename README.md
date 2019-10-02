@@ -36,5 +36,10 @@ curl -d '{"user_id": "x", "message": "test"}' http://localhost:8080/messages
 ```
 Then the user x you specified will receive the test message.
 
-For more details, please visit my blog.
-https://leileiluoluo.com/posts/golang-websocket-combine-consistent-hashing.html
+For more details, please visit [my blog](https://leileiluoluo.com/posts/golang-websocket-combine-consistent-hashing.html).
+
+## 4) Test page
+You can test WebSocket connection and message receive in this page. 
+```
+http://localhost:8080/index/
+```
